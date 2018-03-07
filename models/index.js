@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize';
 
-const sequelize = new Sequelize('slack', 'postgres', 'B1tch_Pl3a53', {// change DB password here
+const sequelize = new Sequelize('slack', 'postgres', 'postgres', {// change DB password here
   dialect: 'postgres',
   operatorsAliases: Sequelize.Op,
   define: {
