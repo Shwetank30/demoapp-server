@@ -18,7 +18,9 @@ const SECRET2 = 'ef6w4ef5ewfefe94ev1ve64ve66ve6vew2c1w';
 
 const typeDefs = mergeTypes(fileLoader(path.join(__dirname, './schema')));
 
-const resolvers = mergeResolvers(fileLoader(path.join(__dirname, './resolvers')));
+const resolvers = mergeResolvers(
+  fileLoader(path.join(__dirname, './resolvers')),
+);
 
 const schema = makeExecutableSchema({
   typeDefs,
@@ -110,13 +112,11 @@ models.sequelize.sync({}).then(() => {
               throw new Error('Invalid auth tokens');
             }
 
-            const member = await models.Member.findOne({
-              where: { teamId: 1, userId: user.id },
-            });
+            // const member = await models.Member.findOne({ where: { teamId: 1, userId: user.id } });
 
-            if (!member) {
-              throw new Error('Missing auth tokens!');
-            }
+            // if (!member) {
+            //   throw new Error('Missing auth tokens!');
+            // }
 
             return true;
           }
