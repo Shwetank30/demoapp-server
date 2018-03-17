@@ -10,7 +10,16 @@ export default {
   Subscription: {
     newChannelMessage: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator(NEW_CHANNEL_MESSAGE),
+        (parent, { channelId }, { models, user }) =>
+          // check if part of the team
+          //           const channel = await models.Channel.findOne({ where: { id: channelId}});
+          //            const member = await models.Member.findOne({
+          //   where: {teamId: channel.teamId, userId: user.id },
+          // });
+          //           if(!member) {
+          //             throw new Error("You have to be a member of the team to subscribe to it's messages");
+          //           }
+          pubsub.asyncIterator(NEW_CHANNEL_MESSAGE),
         (payload, args) => payload.channelId === args.channelId,
       ),
     },
@@ -24,42 +33,46 @@ export default {
     },
   },
   Query: {
-    messages: requiresAuth.createResolver(async (parent, { channelId }, { models }) =>
-      models.Message.findAll(
-        { order: [['created_at', 'ASC']], where: { channelId } },
-        { raw: true },
-      )),
+    messages: requiresAuth.createResolver(
+      async (parent, { channelId }, { models }) =>
+        models.Message.findAll(
+          { order: [['created_at', 'ASC']], where: { channelId } },
+          { raw: true },
+        ),
+    ),
   },
   Mutation: {
-    createMessage: requiresAuth.createResolver(async (parent, args, { models, user }) => {
-      try {
-        const message = await models.Message.create({
-          ...args,
-          userId: user.id,
-        });
-
-        const asyncFunc = async () => {
-          const currentUser = await models.User.findOne({
-            where: {
-              id: user.id,
-            },
+    createMessage: requiresAuth.createResolver(
+      async (parent, args, { models, user }) => {
+        try {
+          const message = await models.Message.create({
+            ...args,
+            userId: user.id,
           });
 
-          pubsub.publish(NEW_CHANNEL_MESSAGE, {
-            channelId: args.channelId,
-            newChannelMessage: {
-              ...message.dataValues,
-              user: currentUser.dataValues,
-            },
-          });
-        };
+          const asyncFunc = async () => {
+            const currentUser = await models.User.findOne({
+              where: {
+                id: user.id,
+              },
+            });
 
-        asyncFunc();
-        return true;
-      } catch (err) {
-        console.log(err);
-        return false;
-      }
-    }),
+            pubsub.publish(NEW_CHANNEL_MESSAGE, {
+              channelId: args.channelId,
+              newChannelMessage: {
+                ...message.dataValues,
+                user: currentUser.dataValues,
+              },
+            });
+          };
+
+          asyncFunc();
+          return true;
+        } catch (err) {
+          console.log(err);
+          return false;
+        }
+      },
+    ),
   },
 };
