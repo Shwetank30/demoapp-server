@@ -54,7 +54,7 @@ export default (sequelize, DataTypes) => {
       through: models.Member,
       foreignKey: {
         name: 'userId',
-        value: 'user_id',
+        field: 'user_id',
       },
     });
     //  N:M
@@ -62,7 +62,7 @@ export default (sequelize, DataTypes) => {
       through: 'channel_member',
       foreignKey: {
         name: 'userId',
-        value: 'user_id',
+        field: 'user_id',
       },
     });
   };
